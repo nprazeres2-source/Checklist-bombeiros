@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Checklist de Viaturas</title>
+<style>
+  :root{
+    --bg: #E9EDEE;
+    --panel: #FFFFFF;
+    --ink: #1B2529;
+    --ink-soft: #5B6A70;
+    --line: #D7DEE0;
+    --petrol: #0F3D3E;
+    --petrol-deep: #0A2C2D;
+    --amber: #E8A33D;
+    --amber-deep: #C6832A;
+    --ok: #2F7D5A;
+    --ok-bg: #E4F2EA;
+    --bad: #B23A32;
+    --bad-bg: #FBEAE8;
+    --radius: 10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Arial,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  header{
+    background:var(--petrol);
+    color:#fff;
+    padding:18px 20px 0 20px;
+  }
+  header h1{
+    margin:0 0 14px 0;
+    font-size:1.35rem;
+    font-weight:700;
+    letter-spacing:.2px;
+  }
+  header h1 small{
+    display:block;
+    font-size:.72rem;
+    font-weight:400;
+    color:#B9D3D0;
+    margin-top:3px;
+  }
+  nav{
+    display:flex;
+    gap:2px;
+  }
+  nav button{
+    flex:1;
+    background:transparent;
+    border:none;
+    color:#BFDAD6;
+    padding:12px 8px;
+    font-size:.92rem;
+    font-weight:600;
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+  }
+  nav button.active{
+    color:#fff;
+    border-bottom:3px solid var(--amber);
+  }
+  main{
+    max-width:760px;
+    margin:0 auto;
+    padding:18px 14px 90px 14px;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:14px;
+  }
+  .card h2{
+    font-size:1.02rem;
+    margin:0 0 12px 0;
+    color:var(--petrol-deep);
+  }
+  label{
+    display:block;
+    font-size:.82rem;
+    color:var(--ink-soft);
+    margin-bottom:5px;
+    margin-top:12px;
+  }
+  label:first-child{margin-top:0;}
+  select, input[type=text], input[type=number], input[type=date], textarea{
+    width:100%;
+    padding:11px 10px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:.98rem;
+    background:#fff;
+    color:var(--ink);
+  }
+  textarea{resize:vertical;min-height:60px;}
+  button.primary{
+    background:var(--petrol);
+    color:#fff;
+    border:none;
+    padding:13px 18px;
+    border-radius:8px;
+    font-size:.98rem;
+    font-weight:600;
+    cursor:pointer;
+    width:100%;
+  }
+  button.primary:active{background:var(--petrol-deep);}
+  button.secondary{
+    background:#fff;
+    color:var(--petrol);
+    border:1px solid var(--petrol);
+    padding:10px 14px;
+    border-radius:8px;
+    font-size:.9rem;
+    font-weight:600;
+    cursor:pointer;
+  }
+  button.ghost{
+    background:transparent;
+    border:none;
+    color:var(--bad);
+    font-size:.85rem;
+    cursor:pointer;
+    padding:6px 4px;
+  }
+  .row{display:flex;gap:10px;}
+  .row > *{flex:1;}
+  .item-row{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .item-name{flex:1 1 140px;font-weight:600;font-size:.95rem;}
+  .item-expected{font-size:.76rem;color:var(--ink-soft);flex-basis:100%;}
+  .toggle-group{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--line);}
+  .toggle-group button{
+    border:none;padding:9px 14px;font-size:.85rem;font-weight:600;cursor:pointer;background:#fff;color:var(--ink-soft);
+  }
+  .toggle-group button.on-ok{background:var(--ok-bg);color:var(--ok);}
+  .toggle-group button.on-bad{background:var(--bad-bg);color:var(--bad);}
+  .qty-input{width:64px;text-align:center;padding:8px 4px;}
+  .item-obs{flex:1 1 100%;padding:8px 9px;font-size:.85rem;margin-top:2px;}
+  .sign-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:6px;}
+  .sign-block{border:1px solid var(--line);border-radius:8px;padding:10px;}
+  .sign-block input[type=text]{margin-bottom:8px;}
+  .sign-pad-wrap{position:relative;border:1px dashed var(--line);border-radius:6px;background:#FAFBFB;}
+  canvas.sign-pad{display:block;width:100%;height:120px;touch-action:none;border-radius:6px;}
+  .sign-pad-actions{display:flex;justify-content:flex-end;margin-top:6px;}
+  .sign-thumb{background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px;margin-top:6px;text-align:center;}
+  .sign-thumb img{max-width:100%;max-height:90px;}
+  .sign-thumb .sign-thumb-name{font-size:.78rem;color:var(--ink-soft);margin-top:4px;}
+  .badge{
+    display:inline-block;
+    font-size:.72rem;
+    font-weight:700;
+    padding:3px 9px;
+    border-radius:20px;
+  }
+  .badge.ok{background:var(--ok-bg);color:var(--ok);}
+  .badge.bad{background:var(--bad-bg);color:var(--bad);}
+  .hist-entry{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px;
+    margin-bottom:10px;
+    cursor:pointer;
+  }
+  .hist-entry:active{background:#F4F6F7;}
+  .hist-head{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.92rem;}
+  .hist-sub{font-size:.78rem;color:var(--ink-soft);margin-top:2px;}
+  .empty{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:.88rem;
+    padding:30px 10px;
+  }
+  .type-block{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:12px;}
+  .type-block-head{display:flex;justify-content:space-between;align-items:center;}
+  .type-block-head strong{font-size:.96rem;}
+  .mini-item{display:flex;gap:8px;align-items:center;margin-top:8px;}
+  .mini-item input[type=text]{flex:2;}
+  .mini-item input[type=number]{flex:1;width:auto;}
+  .status-bar{
+    position:fixed;top:0;left:0;right:0;
+    padding:8px 14px;
+    text-align:center;
+    font-size:.8rem;
+    font-weight:600;
+    z-index:50;
+    transform:translateY(-100%);
+    transition:transform .25s ease;
+  }
+  .status-bar.show{transform:translateY(0);}
+  .status-bar.ok{background:var(--ok-bg);color:var(--ok);}
+  .status-bar.bad{background:var(--bad-bg);color:var(--bad);}
+  .status-bar.info{background:#FFF3E0;color:var(--amber-deep);}
+  footer{
+    text-align:center;
+    font-size:.72rem;
+    color:var(--ink-soft);
+    padding:20px 10px 30px 10px;
+  }
+  .setup-box{
+    background:#FFF7E8;
+    border:1px solid var(--amber);
+    border-radius:8px;
+    padding:12px 14px;
+    font-size:.82rem;
+    color:#7A5615;
+    margin-bottom:14px;
+  }
+  .setup-box code{background:#00000010;padding:1px 5px;border-radius:4px;}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<div id="statusBar" class="status-bar"></div>
+
+<header>
+  <h1>Checklist de Viaturas
+    <small>Material a bordo, por tipo de viatura</small>
+  </h1>
+  <nav>
+    <button data-tab="checklist" class="active">Checklist</button>
+    <button data-tab="config">Viaturas</button>
+    <button data-tab="historico">Histórico</button>
+  </nav>
+</header>
+
+<main>
+
+  <div id="setupBox" class="setup-box hidden">
+    A app ainda não está ligada à base de dados partilhada. Edita o bloco
+    <code>firebaseConfig</code> no início do ficheiro HTML com os dados do teu
+    projeto Firebase (Firestore) para sincronizar entre tablets.
+  </div>
+
+  <!-- TAB: CHECKLIST -->
+  <section id="tab-checklist">
+    <div class="card">
+      <h2>Selecionar viatura</h2>
+      <label for="selViatura">Viatura</label>
+      <select id="selViatura"></select>
+      <div id="checklistArea"></div>
+    </div>
+  </section>
+
+  <!-- TAB: CONFIG -->
+  <section id="tab-config" class="hidden">
+    <div class="card">
+      <h2>Tipos de viatura e listas de material</h2>
+      <div id="listaTipos"></div>
+      <label for="novoTipoNome">Novo tipo de viatura</label>
+      <input type="text" id="novoTipoNome" placeholder="Ex: Veículo de Combate a Incêndios">
+      <div style="margin-top:12px;">
+        <button class="primary" id="btnAddTipo">Adicionar tipo</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Viaturas</h2>
+      <div id="listaViaturas"></div>
+      <label for="novaViaturaNome">Nova viatura — nome / indicativo</label>
+      <input type="text" id="novaViaturaNome" placeholder="Ex: VTTU, VFCI 01...">
+      <label for="novaViaturaTipo">Tipo de viatura</label>
+      <select id="novaViaturaTipo"></select>
+      <div id="avisoSemTipos" class="hist-sub" style="display:none;margin-top:4px;color:var(--bad);">
+        Cria primeiro um tipo de viatura, na secção acima.
+      </div>
+      <div style="margin-top:12px;">
+        <button class="primary" id="btnAddViatura">Adicionar viatura</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB: HISTORICO -->
+  <section id="tab-historico" class="hidden">
+    <div class="card">
+      <h2>Histórico de checklists</h2>
+      <label for="histFiltroViatura">Viatura</label>
+      <select id="histFiltroViatura">
+        <option value="">Todas</option>
+      </select>
+      <div id="histLista" style="margin-top:14px;"></div>
+    </div>
+  </section>
+
+  <div class="card" id="detalheCard" style="display:none;">
+    <h2>Detalhe da checklist</h2>
+    <div id="detalheConteudo"></div>
+    <button class="secondary" id="btnFecharDetalhe" style="margin-top:10px;">Fechar</button>
+  </div>
+
+</main>
+
+<footer>© Nuno Prazeres — nprazeres2@gmail.com</footer>
+
+<!-- Firebase (compat SDK, sem build step) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- jsPDF, para gerar o PDF da checklist -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+/* =========================================================
+   CONFIGURAÇÃO FIREBASE
+   Substitui pelos dados do teu projeto Firebase (Firestore).
+   Podes reutilizar um projeto Firebase já existente, usando
+   um prefixo de coleção diferente (ver COLLECTION_PREFIX).
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "COLOCAR_API_KEY",
+  authDomain: "COLOCAR_PROJETO.firebaseapp.com",
+  projectId: "COLOCAR_PROJETO",
+  storageBucket: "COLOCAR_PROJETO.appspot.com",
+  messagingSenderId: "COLOCAR_ID",
+  appId: "COLOCAR_APP_ID"
+};
+const COLLECTION_PREFIX = "checklistViaturas_";
+
+let db = null;
+let firebaseReady = false;
+
+function initFirebase(){
+  try{
+    if(firebaseConfig.apiKey === "COLOCAR_API_KEY"){
+      document.getElementById("setupBox").classList.remove("hidden");
+      return;
+    }
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    firebaseReady = true;
+    attachListeners();
+  }catch(e){
+    console.error(e);
+    document.getElementById("setupBox").classList.remove("hidden");
+  }
+}
+
+/* =========================================================
+   ESTADO LOCAL
+   ========================================================= */
+let tipos = [];       // {id, nome, itens:[{id,nome,qtdEsperada}]}
+let viaturas = [];     // {id, nome, tipoId}
+let checklists = [];   // {id, viaturaId, viaturaNome, tipoNome, data, itens:[{nome,presente,quantidade,qtdEsperada}], observacoes}
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function showStatus(msg, kind){
+  const bar = document.getElementById("statusBar");
+  bar.textContent = msg;
+  bar.className = "status-bar show " + (kind || "info");
+  setTimeout(()=> bar.classList.remove("show"), 2200);
+}
+
+/* =========================================================
+   FIRESTORE — LISTENERS EM TEMPO REAL
+   ========================================================= */
+function attachListeners(){
+  db.collection(COLLECTION_PREFIX + "tipos").onSnapshot(snap=>{
+    tipos = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderTipos();
+    renderSelectTipo();
+    renderSelectViatura();
+  }, err=> showStatus("Erro a sincronizar tipos", "bad"));
+
+  db.collection(COLLECTION_PREFIX + "viaturas").onSnapshot(snap=>{
+    viaturas = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderViaturas();
+    renderSelectViatura();
+    renderHistFiltro();
+  }, err=> showStatus("Erro a sincronizar viaturas", "bad"));
+
+  db.collection(COLLECTION_PREFIX + "checklists").orderBy("data","desc").onSnapshot(snap=>{
+    checklists = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderHistorico();
+  }, err=> showStatus("Erro a sincronizar histórico", "bad"));
+}
+
+async function salvarTipo(tipo){
+  if(!firebaseReady) return showStatus("Liga o Firebase primeiro", "bad");
+  await db.collection(COLLECTION_PREFIX + "tipos").doc(tipo.id).set(tipo);
+}
+async function apagarTipo(id){
+  if(!firebaseReady) return;
+  if(!confirm("Apagar este tipo de viatura e a respetiva lista de material?")) return;
+  await db.collection(COLLECTION_PREFIX + "tipos").doc(id).delete();
+}
+async function salvarViatura(v){
+  if(!firebaseReady) return showStatus("Liga o Firebase primeiro", "bad");
+  await db.collection(COLLECTION_PREFIX + "viaturas").doc(v.id).set(v);
+}
+async function apagarViatura(id){
+  if(!firebaseReady) return;
+  if(!confirm("Apagar esta viatura?")) return;
+  await db.collection(COLLECTION_PREFIX + "viaturas").doc(id).delete();
+}
+async function salvarChecklist(c){
+  if(!firebaseReady) return showStatus("Liga o Firebase primeiro", "bad");
+  await db.collection(COLLECTION_PREFIX + "checklists").doc(c.id).set(c);
+}
+
+/* =========================================================
+   TABS
+   ========================================================= */
+document.querySelectorAll("nav button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll("main > section").forEach(s=>s.classList.add("hidden"));
+    document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
+    document.getElementById("detalheCard").style.display = "none";
+  });
+});
+
+/* =========================================================
+   TIPOS DE VIATURA
+   ========================================================= */
+function renderTipos(){
+  const wrap = document.getElementById("listaTipos");
+  if(tipos.length === 0){
+    wrap.innerHTML = '<div class="empty">Ainda não há tipos de viatura configurados.</div>';
+    return;
+  }
+  wrap.innerHTML = "";
+  tipos.forEach(tipo=>{
+    const block = document.createElement("div");
+    block.className = "type-block";
+    const itensHtml = (tipo.itens || []).map((it, idx) => `
+      <div class="mini-item">
+        <input type="text" value="${escapeAttr(it.nome)}" data-tipo="${tipo.id}" data-idx="${idx}" data-field="nome">
+        <input type="number" min="0" value="${it.qtdEsperada}" data-tipo="${tipo.id}" data-idx="${idx}" data-field="qtdEsperada">
+        <button class="ghost" data-remove-item="${tipo.id}" data-idx="${idx}">Remover</button>
+      </div>
+    `).join("");
+    block.innerHTML = `
+      <div class="type-block-head">
+        <strong>${escapeHtml(tipo.nome)}</strong>
+        <button class="ghost" data-del-tipo="${tipo.id}">Apagar tipo</button>
+      </div>
+      ${itensHtml}
+      <div class="mini-item">
+        <input type="text" placeholder="Novo item..." data-newitem-nome="${tipo.id}">
+        <input type="number" placeholder="Qtd" min="0" value="1" data-newitem-qtd="${tipo.id}">
+        <button class="secondary" data-add-item="${tipo.id}">Adicionar</button>
+      </div>
+    `;
+    wrap.appendChild(block);
+  });
+
+  wrap.querySelectorAll("[data-del-tipo]").forEach(b=>{
+    b.addEventListener("click", ()=> apagarTipo(b.dataset.delTipo));
+  });
+  wrap.querySelectorAll("input[data-field]").forEach(inp=>{
+    inp.addEventListener("change", ()=>{
+      const tipo = tipos.find(t=>t.id === inp.dataset.tipo);
+      const idx = parseInt(inp.dataset.idx);
+      const field = inp.dataset.field;
+      tipo.itens[idx][field] = field === "qtdEsperada" ? (parseInt(inp.value)||0) : inp.value;
+      salvarTipo(tipo);
+    });
+  });
+  wrap.querySelectorAll("[data-remove-item]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const tipo = tipos.find(t=>t.id === b.dataset.removeItem);
+      tipo.itens.splice(parseInt(b.dataset.idx), 1);
+      salvarTipo(tipo);
+    });
+  });
+  wrap.querySelectorAll("[data-add-item]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const tipoId = b.dataset.addItem;
+      const tipo = tipos.find(t=>t.id === tipoId);
+      const nomeInp = wrap.querySelector(`[data-newitem-nome="${tipoId}"]`);
+      const qtdInp = wrap.querySelector(`[data-newitem-qtd="${tipoId}"]`);
+      const nome = nomeInp.value.trim();
+      if(!nome) return;
+      tipo.itens = tipo.itens || [];
+      tipo.itens.push({nome, qtdEsperada: parseInt(qtdInp.value)||1});
+      salvarTipo(tipo);
+      nomeInp.value = "";
+      qtdInp.value = "1";
+    });
+  });
+}
+
+document.getElementById("btnAddTipo").addEventListener("click", ()=>{
+  const inp = document.getElementById("novoTipoNome");
+  const nome = inp.value.trim();
+  if(!nome) return showStatus("Indica o nome do tipo de viatura", "bad");
+  salvarTipo({id: uid(), nome, itens: []});
+  inp.value = "";
+  showStatus("Tipo de viatura adicionado", "ok");
+});
+
+function renderSelectTipo(){
+  const sel = document.getElementById("novaViaturaTipo");
+  const aviso = document.getElementById("avisoSemTipos");
+  const prev = sel.value;
+  if(tipos.length === 0){
+    sel.innerHTML = '<option value="">— sem tipos criados —</option>';
+    sel.disabled = true;
+    if(aviso) aviso.style.display = "block";
+  }else{
+    sel.disabled = false;
+    if(aviso) aviso.style.display = "none";
+    sel.innerHTML = tipos.map(t=>`<option value="${t.id}">${escapeHtml(t.nome)}</option>`).join("");
+    if(tipos.some(t=>t.id === prev)) sel.value = prev;
+  }
+}
+
+/* =========================================================
+   VIATURAS
+   ========================================================= */
+function renderViaturas(){
+  const wrap = document.getElementById("listaViaturas");
+  if(viaturas.length === 0){
+    wrap.innerHTML = '<div class="empty">Ainda não há viaturas registadas.</div>';
+    return;
+  }
+  wrap.innerHTML = viaturas.map(v=>{
+    const tipo = tipos.find(t=>t.id === v.tipoId);
+    return `
+      <div class="item-row">
+        <div class="item-name">${escapeHtml(v.nome)}
+          <div class="item-expected">${tipo ? escapeHtml(tipo.nome) : "tipo removido"}</div>
+        </div>
+        <button class="ghost" data-del-viatura="${v.id}">Apagar</button>
+      </div>
+    `;
+  }).join("");
+  wrap.querySelectorAll("[data-del-viatura]").forEach(b=>{
+    b.addEventListener("click", ()=> apagarViatura(b.dataset.delViatura));
+  });
+}
+
+document.getElementById("btnAddViatura").addEventListener("click", ()=>{
+  const nomeInp = document.getElementById("novaViaturaNome");
+  const tipoSel = document.getElementById("novaViaturaTipo");
+  const nome = nomeInp.value.trim();
+  if(!nome) return showStatus("Indica o nome/indicativo da viatura", "bad");
+  if(!tipoSel.value) return showStatus("Cria primeiro um tipo de viatura", "bad");
+  salvarViatura({id: uid(), nome, tipoId: tipoSel.value});
+  nomeInp.value = "";
+  showStatus("Viatura adicionada", "ok");
+});
+
+/* =========================================================
+   PDF E ENVIO POR EMAIL
+   ========================================================= */
+function construirPdf(c){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:"pt", format:"a4"});
+  const margin = 40;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  let y = margin;
+
+  function novaLinhaSeNecessario(altura){
+    if(y + altura > pageHeight - margin){
+      doc.addPage();
+      y = margin;
+    }
+  }
+
+  doc.setFontSize(16);
+  doc.setFont(undefined, "bold");
+  doc.text("Checklist de Viatura", margin, y);
+  y += 24;
+
+  doc.setFontSize(10);
+  doc.setFont(undefined, "normal");
+  const dataFmt = new Date(c.data).toLocaleString("pt-PT", {dateStyle:"long", timeStyle:"short"});
+  doc.text(`Viatura: ${c.viaturaNome}`, margin, y); y += 14;
+  doc.text(`Tipo de viatura: ${c.tipoNome}`, margin, y); y += 14;
+  doc.text(`Data: ${dataFmt}`, margin, y); y += 20;
+
+  doc.setFont(undefined, "bold");
+  doc.text("Item", margin, y);
+  doc.text("Esperado", margin + 230, y);
+  doc.text("Registado", margin + 300, y);
+  doc.text("Estado", margin + 370, y);
+  y += 6;
+  doc.setLineWidth(0.5);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 14;
+  doc.setFont(undefined, "normal");
+
+  c.itens.forEach(it=>{
+    novaLinhaSeNecessario(28);
+    doc.text(String(it.nome).slice(0,45), margin, y);
+    doc.text(String(it.qtdEsperada), margin + 230, y);
+    doc.text(String(it.quantidade), margin + 300, y);
+    doc.text(it.presente ? "Presente" : "Em falta", margin + 370, y);
+    y += 13;
+    if(it.observacoes){
+      doc.setFontSize(8.5);
+      doc.setTextColor(90,90,90);
+      doc.text(`Obs.: ${it.observacoes}`.slice(0,100), margin + 10, y);
+      doc.setFontSize(10);
+      doc.setTextColor(0,0,0);
+      y += 12;
+    }
+    y += 4;
+  });
+
+  if(c.observacoes){
+    novaLinhaSeNecessario(40);
+    y += 8;
+    doc.setFont(undefined, "bold");
+    doc.text("Observações gerais:", margin, y); y += 14;
+    doc.setFont(undefined, "normal");
+    const linhas = doc.splitTextToSize(c.observacoes, pageWidth - margin*2);
+    linhas.forEach(l=>{ novaLinhaSeNecessario(14); doc.text(l, margin, y); y += 14; });
+  }
+
+  const assinaturas = (c.assinaturas || []).filter(a=>a.nome || a.assinatura);
+  if(assinaturas.length){
+    novaLinhaSeNecessario(30);
+    y += 10;
+    doc.setFont(undefined, "bold");
+    doc.text("Assinaturas:", margin, y);
+    y += 16;
+    doc.setFont(undefined, "normal");
+    const colWidth = (pageWidth - margin*2) / 3;
+    let col = 0;
+    let rowStartY = y;
+    let maxRowHeight = 0;
+    assinaturas.forEach((a)=>{
+      novaLinhaSeNecessario(90);
+      const x = margin + col * colWidth;
+      if(a.assinatura){
+        try{ doc.addImage(a.assinatura, "PNG", x, y, colWidth - 14, 55); }catch(e){}
+      }
+      doc.setFontSize(9);
+      doc.text(a.nome || "(sem nome)", x, y + 68);
+      doc.setFontSize(10);
+      maxRowHeight = Math.max(maxRowHeight, 80);
+      col++;
+      if(col === 3){ col = 0; y += maxRowHeight; maxRowHeight = 0; }
+    });
+    if(col !== 0) y += maxRowHeight;
+  }
+
+  return doc;
+}
+
+function nomeFicheiroPdf(c){
+  const dataPart = new Date(c.data).toISOString().slice(0,10);
+  const viaturaPart = (c.viaturaNome || "viatura").replace(/[^a-z0-9]+/gi, "_");
+  return `checklist_${viaturaPart}_${dataPart}.pdf`;
+}
+
+function descarregarPdf(c){
+  const doc = construirPdf(c);
+  doc.save(nomeFicheiroPdf(c));
+}
+
+async function enviarPdfPorEmail(c){
+  const doc = construirPdf(c);
+  const nomeFicheiro = nomeFicheiroPdf(c);
+  const blob = doc.output("blob");
+  const file = new File([blob], nomeFicheiro, {type:"application/pdf"});
+  const assunto = `Checklist ${c.viaturaNome} — ${new Date(c.data).toLocaleDateString("pt-PT")}`;
+
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{
+      await navigator.share({
+        files:[file],
+        title: assunto,
+        text: "Segue em anexo a checklist da viatura."
+      });
+      return;
+    }catch(e){
+      if(e && e.name === "AbortError") return;
+      // se falhar, cai para o fallback abaixo
+    }
+  }
+
+  // Fallback: o tablet não suporta partilha de ficheiros — descarrega o PDF
+  // e abre o email para o utilizador anexar manualmente.
+  descarregarPdf(c);
+  showStatus("PDF descarregado — anexa-o manualmente no email que se vai abrir", "info");
+  const body = encodeURIComponent("Segue a checklist da viatura. Anexa o PDF que acabou de ser descarregado antes de enviar.");
+  window.location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${body}`;
+}
+
+function botoesPdfEmailHtml(){
+  return `
+    <div class="row" style="margin-top:14px;">
+      <button class="secondary" data-pdf-download>Descarregar PDF</button>
+      <button class="secondary" data-pdf-email>Enviar por email</button>
+    </div>
+  `;
+}
+function ligarBotoesPdfEmail(container, checklist){
+  const bDown = container.querySelector("[data-pdf-download]");
+  const bMail = container.querySelector("[data-pdf-email]");
+  if(bDown) bDown.addEventListener("click", ()=> descarregarPdf(checklist));
+  if(bMail) bMail.addEventListener("click", ()=> enviarPdfPorEmail(checklist));
+}
+
+/* =========================================================
+   CHECKLIST
+   ========================================================= */
+let checklistAtual = null; // {viaturaId, itens:[...]}
+
+function renderSelectViatura(){
+  const sel = document.getElementById("selViatura");
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— escolher viatura —</option>' +
+    viaturas.map(v=>`<option value="${v.id}">${escapeHtml(v.nome)}</option>`).join("");
+  if(viaturas.some(v=>v.id === prev)) sel.value = prev;
+}
+
+document.getElementById("selViatura").addEventListener("change", (e)=>{
+  iniciarChecklist(e.target.value);
+});
+
+function iniciarChecklist(viaturaId){
+  const area = document.getElementById("checklistArea");
+  if(!viaturaId){ area.innerHTML = ""; checklistAtual = null; return; }
+  const viatura = viaturas.find(v=>v.id === viaturaId);
+  const tipo = tipos.find(t=>t.id === viatura.tipoId);
+  if(!tipo || !tipo.itens || tipo.itens.length === 0){
+    area.innerHTML = '<div class="empty">Este tipo de viatura ainda não tem lista de material. Configura-a no separador "Viaturas".</div>';
+    checklistAtual = null;
+    return;
+  }
+  checklistAtual = {
+    viaturaId,
+    viaturaNome: viatura.nome,
+    tipoNome: tipo.nome,
+    itens: tipo.itens.map(it=>({nome: it.nome, qtdEsperada: it.qtdEsperada, presente: true, quantidade: it.qtdEsperada}))
+  };
+  renderChecklistArea();
+}
+
+function renderChecklistArea(){
+  const area = document.getElementById("checklistArea");
+  const itensHtml = checklistAtual.itens.map((it, idx)=>`
+    <div class="item-row">
+      <div class="item-name">${escapeHtml(it.nome)}
+        <div class="item-expected">Qtd. esperada: ${it.qtdEsperada}</div>
+      </div>
+      <div class="toggle-group">
+        <button class="${it.presente ? "on-ok" : ""}" data-presente="true" data-idx="${idx}">Presente</button>
+        <button class="${!it.presente ? "on-bad" : ""}" data-presente="false" data-idx="${idx}">Em falta</button>
+      </div>
+      <input type="number" class="qty-input" min="0" value="${it.quantidade}" data-qtd-idx="${idx}" ${it.presente ? "" : "disabled"}>
+      <input type="text" class="item-obs" placeholder="Observações deste item (opcional)" value="${escapeAttr(it.observacoes || "")}" data-obs-idx="${idx}">
+    </div>
+  `).join("");
+  const assinaturasHtml = Array.from({length:6}).map((_, i)=>`
+    <div class="sign-block">
+      <input type="text" placeholder="Nome (assinatura ${i+1})" data-sign-nome="${i}">
+      <div class="sign-pad-wrap">
+        <canvas class="sign-pad" data-sign-canvas="${i}"></canvas>
+      </div>
+      <div class="sign-pad-actions">
+        <button type="button" class="ghost" data-sign-clear="${i}">Limpar assinatura</button>
+      </div>
+    </div>
+  `).join("");
+  area.innerHTML = `
+    <div id="avisoBloqueio" class="setup-box" style="display:none;">
+      🔒 Já existe pelo menos uma assinatura. Os campos ficam bloqueados — apaga todas as assinaturas para voltar a editar.
+    </div>
+    <div id="itensWrap" style="margin-top:14px;">${itensHtml}</div>
+    <label for="obsChecklist">Observações gerais (opcional)</label>
+    <textarea id="obsChecklist" placeholder="Notas sobre esta verificação..."></textarea>
+    <label>Assinaturas de quem faz o checklist (até 6)</label>
+    <div class="sign-grid">${assinaturasHtml}</div>
+    <div style="margin-top:14px;">
+      <button class="primary" id="btnGuardarChecklist">Guardar checklist</button>
+    </div>
+  `;
+  area.querySelectorAll("[data-obs-idx]").forEach(inp=>{
+    inp.addEventListener("change", ()=>{
+      const idx = parseInt(inp.dataset.obsIdx);
+      checklistAtual.itens[idx].observacoes = inp.value;
+    });
+  });
+  setupSignaturePads(area);
+  area.querySelectorAll("[data-presente]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const idx = parseInt(b.dataset.idx);
+      const presente = b.dataset.presente === "true";
+      checklistAtual.itens[idx].presente = presente;
+      if(presente && checklistAtual.itens[idx].quantidade === 0){
+        checklistAtual.itens[idx].quantidade = checklistAtual.itens[idx].qtdEsperada;
+      }
+      if(!presente){ checklistAtual.itens[idx].quantidade = 0; }
+      // atualiza apenas esta linha, sem apagar assinaturas já desenhadas
+      const row = b.closest(".item-row");
+      row.querySelectorAll("[data-presente]").forEach(bb=>{
+        bb.classList.remove("on-ok","on-bad");
+        const bPresente = bb.dataset.presente === "true";
+        if(bPresente === presente) bb.classList.add(presente ? "on-ok" : "on-bad");
+      });
+      const qtyInput = row.querySelector("[data-qtd-idx]");
+      qtyInput.value = checklistAtual.itens[idx].quantidade;
+      qtyInput.disabled = !presente;
+    });
+  });
+  area.querySelectorAll("[data-qtd-idx]").forEach(inp=>{
+    inp.addEventListener("change", ()=>{
+      const idx = parseInt(inp.dataset.qtdIdx);
+      checklistAtual.itens[idx].quantidade = parseInt(inp.value)||0;
+    });
+  });
+  document.getElementById("btnGuardarChecklist").addEventListener("click", guardarChecklistAtual);
+  atualizarBloqueioChecklist(area);
+}
+
+function existeAssinaturaPreenchida(area){
+  const temTraco = Array.from(area.querySelectorAll("[data-sign-canvas]"))
+    .some(c => c.dataset.hasSignature === "true");
+  const temNome = Array.from(area.querySelectorAll("[data-sign-nome]"))
+    .some(inp => inp.value.trim() !== "");
+  return temTraco || temNome;
+}
+
+function atualizarBloqueioChecklist(area){
+  if(!checklistAtual) return;
+  const bloqueado = existeAssinaturaPreenchida(area);
+  const aviso = area.querySelector("#avisoBloqueio");
+  if(aviso) aviso.style.display = bloqueado ? "block" : "none";
+
+  area.querySelectorAll("[data-presente]").forEach(b=> b.disabled = bloqueado);
+  area.querySelectorAll("[data-qtd-idx]").forEach(inp=>{
+    const idx = parseInt(inp.dataset.qtdIdx);
+    inp.disabled = bloqueado || !checklistAtual.itens[idx].presente;
+  });
+  area.querySelectorAll("[data-obs-idx]").forEach(inp=> inp.disabled = bloqueado);
+  const obsGeral = document.getElementById("obsChecklist");
+  if(obsGeral) obsGeral.disabled = bloqueado;
+}
+
+function setupSignaturePads(area){
+  area.querySelectorAll("[data-sign-canvas]").forEach(canvas=>{
+    const ctx = canvas.getContext("2d");
+    const ratio = window.devicePixelRatio || 1;
+    function resize(){
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * ratio;
+      canvas.height = rect.height * ratio;
+      ctx.scale(ratio, ratio);
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#1B2529";
+    }
+    resize();
+    canvas.dataset.hasSignature = "false";
+    let drawing = false;
+    let last = null;
+
+    function pos(e){
+      const rect = canvas.getBoundingClientRect();
+      const p = e.touches ? e.touches[0] : e;
+      return {x: p.clientX - rect.left, y: p.clientY - rect.top};
+    }
+    function start(e){
+      e.preventDefault();
+      drawing = true;
+      last = pos(e);
+    }
+    function move(e){
+      if(!drawing) return;
+      e.preventDefault();
+      const p = pos(e);
+      ctx.beginPath();
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      last = p;
+      canvas.dataset.hasSignature = "true";
+    }
+    function end(){
+      drawing = false;
+      atualizarBloqueioChecklist(area);
+    }
+
+    canvas.addEventListener("mousedown", start);
+    canvas.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", end);
+    canvas.addEventListener("touchstart", start, {passive:false});
+    canvas.addEventListener("touchmove", move, {passive:false});
+    canvas.addEventListener("touchend", end);
+  });
+
+  area.querySelectorAll("[data-sign-nome]").forEach(inp=>{
+    inp.addEventListener("input", ()=> atualizarBloqueioChecklist(area));
+  });
+
+  area.querySelectorAll("[data-sign-clear]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = btn.dataset.signClear;
+      const canvas = area.querySelector(`[data-sign-canvas="${idx}"]`);
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.dataset.hasSignature = "false";
+      atualizarBloqueioChecklist(area);
+    });
+  });
+}
+
+async function guardarChecklistAtual(){
+  if(!checklistAtual) return;
+  const area = document.getElementById("checklistArea");
+  const obs = document.getElementById("obsChecklist").value.trim();
+
+  const assinaturas = [];
+  area.querySelectorAll("[data-sign-canvas]").forEach(canvas=>{
+    const idx = canvas.dataset.signCanvas;
+    const nomeInp = area.querySelector(`[data-sign-nome="${idx}"]`);
+    const nome = nomeInp.value.trim();
+    const temAssinatura = canvas.dataset.hasSignature === "true";
+    if(nome || temAssinatura){
+      assinaturas.push({
+        nome,
+        assinatura: temAssinatura ? canvas.toDataURL("image/png") : null
+      });
+    }
+  });
+
+  const registo = {
+    id: uid(),
+    viaturaId: checklistAtual.viaturaId,
+    viaturaNome: checklistAtual.viaturaNome,
+    tipoNome: checklistAtual.tipoNome,
+    data: new Date().toISOString(),
+    itens: checklistAtual.itens,
+    observacoes: obs,
+    assinaturas
+  };
+  await salvarChecklist(registo);
+  showStatus("Checklist guardada", "ok");
+  document.getElementById("selViatura").value = "";
+  document.getElementById("checklistArea").innerHTML = `
+    <div class="empty" style="padding-top:10px;">
+      <div style="color:var(--ok);font-weight:600;margin-bottom:4px;">Checklist guardada com sucesso.</div>
+      Podes descarregar o PDF ou enviá-lo por email.
+    </div>
+    ${botoesPdfEmailHtml()}
+  `;
+  ligarBotoesPdfEmail(document.getElementById("checklistArea"), registo);
+  checklistAtual = null;
+}
+
+/* =========================================================
+   HISTÓRICO
+   ========================================================= */
+function renderHistFiltro(){
+  const sel = document.getElementById("histFiltroViatura");
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Todas</option>' +
+    viaturas.map(v=>`<option value="${v.id}">${escapeHtml(v.nome)}</option>`).join("");
+  sel.value = prev;
+}
+document.getElementById("histFiltroViatura").addEventListener("change", renderHistorico);
+
+function renderHistorico(){
+  const wrap = document.getElementById("histLista");
+  const filtro = document.getElementById("histFiltroViatura").value;
+  const lista = filtro ? checklists.filter(c=>c.viaturaId === filtro) : checklists;
+  if(lista.length === 0){
+    wrap.innerHTML = '<div class="empty">Sem registos de checklist.</div>';
+    return;
+  }
+  wrap.innerHTML = lista.map(c=>{
+    const faltas = c.itens.filter(it=>!it.presente).length;
+    const dataFmt = new Date(c.data).toLocaleString("pt-PT", {dateStyle:"short", timeStyle:"short"});
+    return `
+      <div class="hist-entry" data-hist="${c.id}">
+        <div class="hist-head">
+          <span>${escapeHtml(c.viaturaNome)}</span>
+          <span class="badge ${faltas === 0 ? "ok" : "bad"}">${faltas === 0 ? "Completo" : faltas + " em falta"}</span>
+        </div>
+        <div class="hist-sub">${escapeHtml(c.tipoNome)} — ${dataFmt}</div>
+      </div>
+    `;
+  }).join("");
+  wrap.querySelectorAll("[data-hist]").forEach(el=>{
+    el.addEventListener("click", ()=> mostrarDetalhe(el.dataset.hist));
+  });
+}
+
+function mostrarDetalhe(id){
+  const c = checklists.find(x=>x.id === id);
+  if(!c) return;
+  const dataFmt = new Date(c.data).toLocaleString("pt-PT", {dateStyle:"long", timeStyle:"short"});
+  const itensHtml = c.itens.map(it=>`
+    <div class="item-row">
+      <div class="item-name">${escapeHtml(it.nome)}
+        <div class="item-expected">Esperado: ${it.qtdEsperada} · Registado: ${it.quantidade}</div>
+        ${it.observacoes ? `<div class="item-expected">Obs.: ${escapeHtml(it.observacoes)}</div>` : ""}
+      </div>
+      <span class="badge ${it.presente ? "ok" : "bad"}">${it.presente ? "Presente" : "Em falta"}</span>
+    </div>
+  `).join("");
+  const assinaturas = (c.assinaturas || []).filter(a=>a.nome || a.assinatura);
+  const assinaturasHtml = assinaturas.length === 0 ? "" : `
+    <label style="margin-top:16px;">Assinaturas</label>
+    <div class="sign-grid">
+      ${assinaturas.map(a=>`
+        <div class="sign-thumb">
+          ${a.assinatura ? `<img src="${a.assinatura}" alt="Assinatura">` : ""}
+          <div class="sign-thumb-name">${escapeHtml(a.nome || "(sem nome)")}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+  document.getElementById("detalheConteudo").innerHTML = `
+    <p><strong>${escapeHtml(c.viaturaNome)}</strong> (${escapeHtml(c.tipoNome)})<br>
+    <span style="color:var(--ink-soft);font-size:.85rem;">${dataFmt}</span></p>
+    ${itensHtml}
+    ${c.observacoes ? `<p style="margin-top:10px;"><strong>Observações:</strong> ${escapeHtml(c.observacoes)}</p>` : ""}
+    ${assinaturasHtml}
+    ${botoesPdfEmailHtml()}
+  `;
+  ligarBotoesPdfEmail(document.getElementById("detalheConteudo"), c);
+  document.getElementById("detalheCard").style.display = "block";
+  document.getElementById("detalheCard").scrollIntoView({behavior:"smooth"});
+}
+
+document.getElementById("btnFecharDetalhe").addEventListener("click", ()=>{
+  document.getElementById("detalheCard").style.display = "none";
+});
+
+/* =========================================================
+   UTIL
+   ========================================================= */
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+initFirebase();
+</script>
+</body>
+</html>
