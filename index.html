@@ -283,6 +283,14 @@
     <div style="margin-top:16px;">
       <button class="primary" id="btnLogin">Entrar</button>
     </div>
+    <button type="button" class="ghost" id="btnMostrarAdmin" style="margin-top:14px;padding:0;display:block;">Sou administrador</button>
+    <div id="adminLoginBox" class="hidden" style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px;">
+      <label for="loginAdminPass">Password de administrador</label>
+      <input type="password" id="loginAdminPass" placeholder="Password" autocomplete="off">
+      <div style="margin-top:12px;">
+        <button class="secondary" id="btnLoginAdmin">Entrar como administrador</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -412,6 +420,12 @@ const firebaseConfig = {
 };
 const COLLECTION_PREFIX = "checklistViaturas_";
 
+/* Password de acesso de administrador (altera para a tua própria).
+   Nota: isto corre no browser — qualquer pessoa com acesso ao ficheiro
+   consegue ver esta password no código-fonte. É uma barreira simples
+   para o dia a dia nos tablets, não uma segurança forte. */
+const ADMIN_PASSWORD = "Np%20030495";
+
 let db = null;
 let firebaseReady = false;
 
@@ -485,8 +499,9 @@ function attachListeners(){
 }
 
 /* =========================================================
-   ACESSO (login por ID de viatura + matrícula)
+   ACESSO (login por ID de viatura + matrícula, ou admin)
    ========================================================= */
+const CHAVE_ROLE = "checklistViaturas_role";       // "admin" | "viatura"
 const CHAVE_SESSAO = "checklistViaturas_viaturaAuthId";
 let loginJaTentado = false; // evita repetir auto-login a cada snapshot
 
@@ -494,11 +509,29 @@ function normalizarCredencial(s){
   return String(s || "").trim().toLowerCase().replace(/[\s-]/g, "");
 }
 
+/* Mostra/esconde o que só o admin pode ver e usar: Resumo, Viaturas
+   (configuração de tipos/viaturas) e Histórico. O acesso por viatura
+   só vê e preenche o Checklist da sua própria viatura. */
+function aplicarPermissoes(role){
+  const navResumo = document.querySelector('nav button[data-tab="resumo"]');
+  const navConfig = document.querySelector('nav button[data-tab="config"]');
+  const navHistorico = document.querySelector('nav button[data-tab="historico"]');
+  const selViaturaEl = document.getElementById("selViatura");
+  const souAdmin = role === "admin";
+  [navResumo, navConfig, navHistorico].forEach(btn=>{
+    if(!btn) return;
+    btn.classList.toggle("hidden", !souAdmin);
+  });
+  if(selViaturaEl) selViaturaEl.disabled = !souAdmin;
+}
+
 function entrarComoViatura(viatura){
+  localStorage.setItem(CHAVE_ROLE, "viatura");
   localStorage.setItem(CHAVE_SESSAO, viatura.id);
+  aplicarPermissoes("viatura");
   document.getElementById("loginOverlay").classList.add("hidden");
   document.getElementById("appWrap").classList.remove("hidden");
-  // abre já a checklist desta viatura, pronta a preencher
+  // trava no separador Checklist, já com a própria viatura selecionada
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
   document.querySelector('nav button[data-tab="checklist"]').classList.add("active");
   document.querySelectorAll("main > section").forEach(s=>s.classList.add("hidden"));
@@ -507,14 +540,31 @@ function entrarComoViatura(viatura){
   iniciarChecklist(viatura.id);
 }
 
+function entrarComoAdmin(){
+  localStorage.setItem(CHAVE_ROLE, "admin");
+  localStorage.removeItem(CHAVE_SESSAO);
+  aplicarPermissoes("admin");
+  document.getElementById("loginOverlay").classList.add("hidden");
+  document.getElementById("appWrap").classList.remove("hidden");
+  // fica no Resumo, que é o separador ativo por omissão
+}
+
 function tentarAutoLogin(){
   if(loginJaTentado) return;
-  const idGuardado = localStorage.getItem(CHAVE_SESSAO);
-  if(!idGuardado) return;
-  const viatura = viaturas.find(v=>v.id === idGuardado);
-  if(viatura){
+  const role = localStorage.getItem(CHAVE_ROLE);
+  if(role === "admin"){
     loginJaTentado = true;
-    entrarComoViatura(viatura);
+    entrarComoAdmin();
+    return;
+  }
+  if(role === "viatura"){
+    const idGuardado = localStorage.getItem(CHAVE_SESSAO);
+    if(!idGuardado) return;
+    const viatura = viaturas.find(v=>v.id === idGuardado);
+    if(viatura){
+      loginJaTentado = true;
+      entrarComoViatura(viatura);
+    }
   }
 }
 
@@ -554,12 +604,32 @@ function tentarLogin(){
   entrarComoViatura(viatura);
 }
 
+function tentarLoginAdmin(){
+  const passInp = document.getElementById("loginAdminPass");
+  const erroDiv = document.getElementById("loginErro");
+  erroDiv.style.display = "none";
+  if(!passInp.value || passInp.value !== ADMIN_PASSWORD){
+    erroDiv.textContent = "Password de administrador incorreta.";
+    erroDiv.style.display = "block";
+    return;
+  }
+  loginJaTentado = true;
+  entrarComoAdmin();
+}
+
 document.getElementById("btnLogin").addEventListener("click", tentarLogin);
 document.getElementById("loginMatricula").addEventListener("keydown", (e)=>{ if(e.key === "Enter") tentarLogin(); });
 document.getElementById("loginViatura").addEventListener("keydown", (e)=>{ if(e.key === "Enter") document.getElementById("loginMatricula").focus(); });
 
+document.getElementById("btnMostrarAdmin").addEventListener("click", ()=>{
+  document.getElementById("adminLoginBox").classList.toggle("hidden");
+});
+document.getElementById("btnLoginAdmin").addEventListener("click", tentarLoginAdmin);
+document.getElementById("loginAdminPass").addEventListener("keydown", (e)=>{ if(e.key === "Enter") tentarLoginAdmin(); });
+
 document.getElementById("btnLogout").addEventListener("click", ()=>{
   localStorage.removeItem(CHAVE_SESSAO);
+  localStorage.removeItem(CHAVE_ROLE);
   location.reload();
 });
 
@@ -1448,6 +1518,7 @@ function escapeHtml(s){
 function escapeAttr(s){ return escapeHtml(s); }
 
 initFirebase();
+tentarAutoLogin(); // entra logo como admin se já tiver sessão guardada (não depende dos dados das viaturas)
 </script>
 </body>
 </html>
